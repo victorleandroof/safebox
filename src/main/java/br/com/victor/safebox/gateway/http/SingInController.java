@@ -26,20 +26,20 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/v1/auth/")
+@RequestMapping("/v1/auth")
 @Api(value = "/v1/auth/", produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class SingInController {
 
-	private ClientMapper mapper;
-	private SingInUserCase singInUserCase;
+	private final ClientMapper mapper;
+	private final SingInUserCase singInUserCase;
+	private final Logger log = LoggerFactory.getLogger(getClass());
+
 
 	@Autowired
-	public SingInController(ClientMapper mapper, SingInUserCase singInUserCase) {
+	public SingInController(final ClientMapper mapper, final SingInUserCase singInUserCase) {
 		this.mapper = mapper;
 		this.singInUserCase = singInUserCase;
 	}
-
-	private final Logger log = LoggerFactory.getLogger(getClass());
 
 
 	@ApiOperation(value = "authentication")
@@ -50,8 +50,8 @@ public class SingInController {
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<SingInReponse> singIn(@RequestBody SingInRequest client)  {
 		log.info("authentication user - {}  - {}",client.getUsername(), LocalDateTime.now());
-		String token = singInUserCase.execute(mapper.mapToDomain(client));
-		SingInReponse response = new SingInReponse();
+		final String token = singInUserCase.execute(mapper.mapToDomain(client));
+		final SingInReponse response = new SingInReponse();
 		response.setToken(token);
 		return  ResponseEntity.ok().body(response);
 	}

@@ -22,21 +22,22 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.ApiResponse;
 
 @RestController
-@RequestMapping("/v1/client/")
-@Api(value = "/v1/client/", produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-public class ClientController {
+@RequestMapping("/v1/client/register")
+@Api(value = "/v1/client/register", produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+public class SingUpController {
 
-	private ClientMapper mapper;
-	private RegisterNewUser registerNewUser;
+
+	private final Logger log = LoggerFactory.getLogger(getClass());
+
+	private final ClientMapper mapper;
+	private final RegisterNewUser registerNewUser;
 
 	@Autowired
-	public ClientController(ClientMapper mapper, RegisterNewUser registerNewUser) {
+	public SingUpController(final ClientMapper mapper,final RegisterNewUser registerNewUser) {
 		this.mapper = mapper;
 		this.registerNewUser = registerNewUser;
 	}
 
-	private final Logger log = LoggerFactory.getLogger(getClass());
-	
 
 	@ApiOperation(value = "singup")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "create new user - retorn user saved"),
@@ -46,8 +47,8 @@ public class ClientController {
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<CreateUserResponse> save(@RequestBody CreateUserRequest client)  {
 		log.info("create a new user - {}",client.getName());
-		Client savedClient = registerNewUser.execute(mapper.mapToDomain(client));
-		CreateUserResponse response = (CreateUserResponse) mapper.mapToResponse(savedClient,CreateUserResponse.class);
+		final Client savedClient = registerNewUser.execute(mapper.mapToDomain(client));
+		final CreateUserResponse response = (CreateUserResponse) mapper.mapToResponse(savedClient,CreateUserResponse.class);
 		return  ResponseEntity.ok().body(response);
 	}
 

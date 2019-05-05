@@ -4,6 +4,8 @@ import org.hibernate.validator.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class Client {
@@ -33,6 +35,11 @@ public class Client {
 
 	private LocalDate birthdate;
 
+	private List<Authority> authorities = new ArrayList<Authority>(){
+		{
+			add(Authority.ROLE_USER);
+		}
+	};
 
 	public String getId() {
 		return id;
@@ -97,5 +104,13 @@ public class Client {
 
 	public void setBirthdate(LocalDate birthdate) {
 		this.birthdate = birthdate;
+	}
+
+	public List<Authority> getAuthorities() {
+		return authorities;
+	}
+
+	public void setAuthorities(List<Authority> authorities) {
+		this.authorities = authorities;
 	}
 }

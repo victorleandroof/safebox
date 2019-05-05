@@ -14,6 +14,8 @@ import br.com.victor.safebox.gateway.ClientGateway;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -27,41 +29,42 @@ import java.util.Map;
 @Component
 public class SingInUserCase {
 
-    private ClientGateway clientGateway;
-    private static int tokenExpirationTime = 30;
+    private final ClientGateway clientGateway;
+    private static int tokenExpirationTime = 365;
+    private final Logger log = LoggerFactory.getLogger(getClass());
+    private  final CryptographyUtil cryp;
 
     @Value("${security.token.secret.key}")
     private String tokenKey;
 
     @Autowired
-    public SingInUserCase(ClientGateway clientGateway) {
+    public SingInUserCase(final ClientGateway clientGateway, final CryptographyUtil cryp) {
         this.clientGateway = clientGateway;
+        this.cryp = cryp;
     }
 
-    public String execute(Client client){
+    public String execute(final Client client){
         checkArgument(nonNull(client),"client request not found");
         checkArgument(isNotBlank(client.getUsername()),"username cannot be blank!");
         checkArgument(isNotBlank(client.getPassword()),"username cannot be blank!");
         checkArgument(isNotEmpty(client.getUsername()),"username cannot be empty!");
         checkArgument(isNotEmpty(client.getPassword()),"username cannot be empty!");
 
-        Client clientFound = clientGateway.findByUsername(client.getUsername());
+        final Client clientFound = clientGateway.findByUsername(client.getUsername());
         try {
-            CryptographyUtil cryp = new CryptographyUtil();
             String password = new String(
                     cryp.decryptFromKeyStore(client.getUsername(),
-                            client.getPassword(),clientFound.getPublicKey()));
+                            client.getPassword(),clientFound.getPassword()));
             clientFound.setPassword(password);
 
         }catch (Exception e){
-            e.printStackTrace();
+            log.info(e.getMessage());
         }
         if(isEmpty(clientFound.getPassword()))throw new AuthenticationException("Usuario ou senha invalidos!!");
         else if(!clientFound.getPassword().equals(client.getPassword()))throw new AuthenticationException("Usuario ou senha invalidos!!");
 
-        Map<String, Object> tokenData = new HashMap<>();
+        final Map<String, Object> tokenData = new HashMap<>();
         tokenData.put("clientType", "user");
-        tokenData.put("userID", clientFound.getId());
         tokenData.put("username", clientFound.getUsername());
         tokenData.put("token_create_date", LocalDateTime.now());
         Calendar calendar = Calendar.getInstance();
