@@ -6,10 +6,7 @@ import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Calendar;
@@ -39,10 +36,22 @@ public class CryptographyUtil {
 		byte[] encryptedBytes = cipher.doFinal(inputData);
 		return encryptedBytes;
 	}
-	
+
+    public byte[] encrypt(String key,byte[] inputData) throws Exception {
+        byte[] publicBytes = Base64.getDecoder().decode(key);
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        PublicKey pubKey = keyFactory.generatePublic(keySpec);
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, pubKey);
+        byte[] encryptedBytes = cipher.doFinal(inputData);
+        return encryptedBytes;
+    }
 
 
-	public byte[] decryptFromKeyStore(String emailClient,String password,String inputData) throws Exception {
+
+
+    public byte[] decryptFromKeyStore(String emailClient,String password,String inputData) throws Exception {
 		KeyStore keysotre = KeyStore();
 		PrivateKey privateKey = (PrivateKey) keysotre.getKey(emailClient, password.toCharArray());
 		byte[] dataByte = Base64.getDecoder().decode(inputData);

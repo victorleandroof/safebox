@@ -7,11 +7,14 @@ import br.com.victor.safebox.domain.Client;
 import br.com.victor.safebox.domain.mapper.ClientMapper;
 import br.com.victor.safebox.gateway.mongo.entity.ClientEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import br.com.victor.safebox.gateway.ClientGateway;;
+import br.com.victor.safebox.gateway.ClientGateway;
+import org.springframework.transaction.annotation.Transactional;;
 
-@Service
+@Component
+@Transactional
 public class ClientGatewayImpl implements ClientGateway {
 
 	private ClientRepository clientRepository;
