@@ -19,9 +19,10 @@ public class JsonWebTokenAuthenticationService implements TokenAuthenticationSer
     @Value("${security.token.secret.key}")
     private String secretKey;
     private final ClientGateway clientGateway;
+    private Client userLogged;
 
     @Autowired
-    public JsonWebTokenAuthenticationService(ClientGateway clientGateway) {
+    public JsonWebTokenAuthenticationService(final ClientGateway clientGateway) {
         this.clientGateway = clientGateway;
     }
 
@@ -31,6 +32,7 @@ public class JsonWebTokenAuthenticationService implements TokenAuthenticationSer
         final Jws<Claims> tokenData = parseToken(token);
         if (tokenData != null) {
             final Client user = getUserFromToken(tokenData);
+            this.userLogged = user;
             if (user != null) {
                 return new UserAuthentication(user);
             }
@@ -57,5 +59,10 @@ public class JsonWebTokenAuthenticationService implements TokenAuthenticationSer
         } catch (Exception e) {
             throw  new AuthenticationException("usuario nao localizado na base de dados");
         }
+    }
+
+    @Override
+    public Client getUserLogged() {
+        return userLogged;
     }
 }

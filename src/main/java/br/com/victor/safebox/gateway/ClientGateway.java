@@ -7,7 +7,7 @@ import java.util.List;
 import br.com.victor.safebox.domain.Client;
 import org.springframework.stereotype.Component;
 
-@Component
+
 public interface ClientGateway {
 
 	List<Client> listAll();

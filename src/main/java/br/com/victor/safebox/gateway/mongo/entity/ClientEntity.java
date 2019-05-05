@@ -2,42 +2,39 @@ package br.com.victor.safebox.gateway.mongo.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Document(collection="client")
 public class ClientEntity {
 
 	@Id
 	private String id;
-
 	@Field("name")
 	private String name;
-
 	@Field("lastname")
 	private String lastname;
-
 	@Field("username")
 	@Indexed(unique = true)
 	private String username;
-
 	@Field("password")
 	private String password;
-
 	@Field("publickey")
 	@Indexed(unique = true)
 	private String publicKey;
-
 	@Field("cellphone")
 	@Indexed(unique = true)
 	private String cellphone;
-
 	@Field("birthdate")
 	private LocalDate birthdate;
-
+	@Field("passwords")
+	@DBRef
+	private List<PasswordEntity> listPasswords;
 
 	public String getId() {
 		return id;
@@ -87,7 +84,6 @@ public class ClientEntity {
 		this.publicKey = publicKey;
 	}
 
-
 	public String getCellphone() {
 		return cellphone;
 	}
@@ -102,5 +98,13 @@ public class ClientEntity {
 
 	public void setBirthdate(LocalDate birthdate) {
 		this.birthdate = birthdate;
+	}
+
+	public List<PasswordEntity> getListPasswords() {
+		return listPasswords;
+	}
+
+	public void setListPasswords(List<PasswordEntity> listPasswords) {
+		this.listPasswords = listPasswords;
 	}
 }
