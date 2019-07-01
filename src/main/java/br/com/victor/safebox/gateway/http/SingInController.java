@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 
@@ -48,12 +49,12 @@ public class SingInController {
 			@ApiResponse(code = 422, message = "Validation error"),
 			@ApiResponse(code = 500, message = "Internal Server Error")})
 	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity<SingInReponse> singIn(@RequestBody SingInRequest client)  {
-		log.info("authentication user - {}  - {}",client.getUsername(), LocalDateTime.now());
-		final String token = singInUserCase.execute(mapper.mapToDomain(client));
-		final SingInReponse response = new SingInReponse();
-		response.setToken(token);
-		return  ResponseEntity.ok().body(response);
+	public Mono<SingInReponse> singIn(@RequestBody Mono<SingInRequest> client)  {
+		log.info("authentication user - {}  - {}",client.block().getUsername(), LocalDateTime.now());
+		String token = singInUserCase.execute(client.cast(Client.class));
+		Mono<SingInReponse> response = Mono.empty();
+		response.block().setToken(token);
+		return  response;
 	}
 
 

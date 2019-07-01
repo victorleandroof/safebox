@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.Calendar;
@@ -43,29 +44,29 @@ public class SingInUserCase {
         this.cryp = cryp;
     }
 
-    public String execute(final Client client){
+    public String execute(Mono<Client> client){
         checkArgument(nonNull(client),"client request not found");
-        checkArgument(isNotBlank(client.getUsername()),"username cannot be blank!");
-        checkArgument(isNotBlank(client.getPassword()),"username cannot be blank!");
-        checkArgument(isNotEmpty(client.getUsername()),"username cannot be empty!");
-        checkArgument(isNotEmpty(client.getPassword()),"username cannot be empty!");
+        checkArgument(isNotBlank(client.block().getUsername()),"username cannot be blank!");
+        checkArgument(isNotBlank(client.block().getPassword()),"username cannot be blank!");
+        checkArgument(isNotEmpty(client.block().getUsername()),"username cannot be empty!");
+        checkArgument(isNotEmpty(client.block().getPassword()),"username cannot be empty!");
 
-        final Client clientFound = clientGateway.findByUsername(client.getUsername());
+        Mono<Client> clientFound = clientGateway.findByUsername(client.block().getUsername());
         try {
             String password = new String(
-                    cryp.decryptFromKeyStore(client.getUsername(),
-                            client.getPassword(),clientFound.getPassword()));
-            clientFound.setPassword(password);
+                    cryp.decryptFromKeyStore(client.block().getUsername(),
+                            client.block().getPassword(),clientFound.block().getPassword()));
+            clientFound.block().setPassword(password);
 
         }catch (Exception e){
             log.info(e.getMessage());
         }
-        if(isEmpty(clientFound.getPassword()))throw new AuthenticationException("Usuario ou senha invalidos!!");
-        else if(!clientFound.getPassword().equals(client.getPassword()))throw new AuthenticationException("Usuario ou senha invalidos!!");
+        if(isEmpty(clientFound.block().getPassword()))throw new AuthenticationException("Usuario ou senha invalidos!!");
+        else if(!clientFound.block().getPassword().equals(client.block().getPassword()))throw new AuthenticationException("Usuario ou senha invalidos!!");
 
-        final Map<String, Object> tokenData = new HashMap<>();
+        Map<String, Object> tokenData = new HashMap<>();
         tokenData.put("clientType", "user");
-        tokenData.put("username", clientFound.getUsername());
+        tokenData.put("username", clientFound.block().getUsername());
         tokenData.put("token_create_date", LocalDateTime.now());
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.MINUTE, tokenExpirationTime);
@@ -76,7 +77,7 @@ public class SingInUserCase {
         return jwtBuilder.signWith(SignatureAlgorithm.HS512, tokenKey).compact();
     }
 
-    public static void setTokenExpirationTime(final int tokenExpirationTime) {
+    public static void setTokenExpirationTime(int tokenExpirationTime) {
         SingInUserCase.tokenExpirationTime = tokenExpirationTime;
     }
 }

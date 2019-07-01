@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Base64;
 
@@ -27,14 +29,16 @@ public class SavePasswordUserCase {
         this.cryp = cryp;
     }
 
-    public Password execute(Password password,String username) throws Exception{
-        Client client = clientGateway.findByUsername(username);
-        password.setClient(client);
-        password.setPassword(Base64.getEncoder()
-                .encodeToString(cryp.encrypt(client.getPublicKey(),password.getPassword().getBytes())));
-        Password passwordSaved = passwordGateway.save(password);
-        client.getListPasswords().add(passwordSaved);
-        clientGateway.saveOrUpdate(client);
+    public Mono<Password> execute(Mono<Password> password, String username) throws Exception{
+        Mono<Client> clientMono = clientGateway.findByUsername(username);
+        password.block().setClient(clientMono);
+        password.block().setPassword(Base64.getEncoder()
+                .encodeToString(cryp.encrypt(clientMono.block().getPublicKey(),password.block().getPassword().getBytes())));
+        Mono<Password> passwordSaved = passwordGateway.save(password);
+        Flux<Password> passwordFlux = Flux.just(passwordSaved.block());
+        Flux<Password> passwordFluxSaved = clientMono.block().getListPasswords();
+        clientMono.block().setListPasswords(Flux.merge(passwordFlux,passwordFluxSaved));
+        clientGateway.saveOrUpdate(clientMono);
         return passwordSaved;
     }
 

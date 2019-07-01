@@ -2,6 +2,7 @@ package br.com.victor.safebox.gateway.http;
 
 
 
+import br.com.victor.safebox.domain.Client;
 import br.com.victor.safebox.gateway.http.json.UpdateRequest;
 import br.com.victor.safebox.gateway.http.mapper.ClientMapper;
 import br.com.victor.safebox.usecase.UpdateClientUseCase;
@@ -14,11 +15,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.util.Objects;
 
@@ -26,8 +27,6 @@ import java.util.Objects;
 @RequestMapping("/v1/client/update")
 @Api(value = "/v1/client/update", produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class UpdateClientController {
-
-
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -46,12 +45,11 @@ public class UpdateClientController {
             @ApiResponse(code = 422, message = "Validation error"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> update(@RequestBody UpdateRequest client)  {
-        log.info("create a new user - {}",client.getName());
+    public void update(@RequestBody Mono<UpdateRequest> client)  {
+        log.info("create a new user - {}",client.block().getName());
         Preconditions.checkArgument(Objects.nonNull(client));
-        final String newPassword = client.getNewPassword();
-        updateClientUseCase.execute(mapper.mapToDomain(client),newPassword);
-        return  ResponseEntity.ok().build();
+        String newPassword = client.block().getNewPassword();
+        updateClientUseCase.execute(client.cast(Client.class),newPassword);
     }
 
 

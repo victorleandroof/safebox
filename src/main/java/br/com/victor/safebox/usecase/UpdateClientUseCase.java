@@ -5,6 +5,7 @@ import br.com.victor.safebox.domain.Client;
 import br.com.victor.safebox.gateway.ClientGateway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import java.util.Base64;
 
@@ -19,14 +20,14 @@ public class UpdateClientUseCase {
         this.validator = validator;
     }
 
-    public Client execute(Client client,String oldPassword){
-        validator.execute(client);
+    public Mono<Client> execute(Mono<Client> client, String oldPassword){
+        validator.execute(client.block());
         try {
             final CryptographyUtil cryp = new CryptographyUtil();
-            cryp.saveKeysKeyStore(client.getUsername(), client.getPassword());
-            client.setPublicKey(cryp.getPublicKeyStr());
-            client.setPassword(Base64.getEncoder()
-                    .encodeToString((cryp.encrypt(client.getPassword().getBytes()))));
+            cryp.saveKeysKeyStore(client.block().getUsername(), client.block().getPassword());
+            client.block().setPublicKey(cryp.getPublicKeyStr());
+            client.block().setPassword(Base64.getEncoder()
+                    .encodeToString((cryp.encrypt(client.block().getPassword().getBytes()))));
         }catch (Exception e){
             e.printStackTrace();
         }

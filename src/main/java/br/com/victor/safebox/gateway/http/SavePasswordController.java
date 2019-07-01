@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -50,13 +51,13 @@ public class SavePasswordController {
             @ApiResponse(code = 422, message = "Validation error"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<SavePasswordResponse> save(@RequestBody SavePasswordRequest savePasswordRequest) throws Exception {
+    public Mono<SavePasswordResponse> save(@RequestBody Mono<SavePasswordRequest> savePasswordRequest) throws Exception {
         log.info("saved password {}", LocalDateTime.now());
         String username = tokenAuthenticationService.getUserLogged().getUsername();
         Preconditions.checkArgument(Objects.nonNull(username),"username not found");
         Preconditions.checkArgument(Objects.nonNull(savePasswordRequest),"request invalid");
-        Password passwordSaved = savePasswordUserCase.execute(passwordMapper.mapToDomain(savePasswordRequest),username);
-        return ResponseEntity.ok(passwordMapper.mapToResponse(passwordSaved,SavePasswordResponse.class));
+        Mono<Password> passwordSaved = savePasswordUserCase.execute(savePasswordRequest.cast(Password.class),username);
+        return passwordSaved.cast(SavePasswordResponse.class);
     }
 
 }

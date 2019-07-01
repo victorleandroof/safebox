@@ -20,6 +20,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.ApiResponse;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/v1/client/register")
@@ -45,11 +46,11 @@ public class SingUpController {
 			@ApiResponse(code = 422, message = "Validation error"),
 			@ApiResponse(code = 500, message = "Internal Server Error")})
 	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity<CreateUserResponse> save(@RequestBody CreateUserRequest client)  {
-		log.info("create a new user - {}",client.getName());
-		final Client savedClient = registerNewUser.execute(mapper.mapToDomain(client));
-		final CreateUserResponse response = (CreateUserResponse) mapper.mapToResponse(savedClient,CreateUserResponse.class);
-		return  ResponseEntity.ok().body(response);
+	public Mono<CreateUserResponse> save(@RequestBody Mono<CreateUserRequest> client)  {
+		log.info("create a new user - {}",client.block().getName());
+		Mono<Client> savedClient = registerNewUser.execute(client.cast(Client.class));
+		Mono<CreateUserResponse> response = savedClient.cast(CreateUserResponse.class);
+		return  response;
 	}
 
 

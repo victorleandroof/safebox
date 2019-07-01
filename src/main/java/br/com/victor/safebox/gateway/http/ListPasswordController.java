@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,12 +52,12 @@ public class ListPasswordController {
             @ApiResponse(code = 422, message = "Validation error"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @RequestMapping(method = RequestMethod.GET)
-    public List<ListPasswordResponse> findAll() throws Exception {
+    public Flux<ListPasswordResponse> findAll() throws Exception {
         log.info("saved password {}", LocalDateTime.now());
         String username = tokenAuthenticationService.getUserLogged().getUsername();
         Preconditions.checkArgument(Objects.nonNull(username),"username not found");
-        List<Password> passwords = listPasswordUseCase.execute(username);
-        return passwords.stream().map(password -> passwordMapper.mapToResponse(password,ListPasswordResponse.class)).collect(Collectors.toList());
+        Flux<Password> passwords = listPasswordUseCase.execute(username);
+        return passwords.cast(ListPasswordResponse.class);
     }
 
 

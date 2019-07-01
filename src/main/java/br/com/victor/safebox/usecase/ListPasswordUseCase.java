@@ -5,6 +5,8 @@ import br.com.victor.safebox.domain.Password;
 import br.com.victor.safebox.gateway.ClientGateway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -18,9 +20,9 @@ public class ListPasswordUseCase {
         this.clientGateway = clientGateway;
     }
 
-    public List<Password> execute(final String username){
-        final Client client = clientGateway.findByUsername(username);
-        return client.getListPasswords();
+    public Flux<Password> execute(final String username){
+         Mono<Client> clientMono = clientGateway.findByUsername(username);
+         return clientMono.block().getListPasswords();
     }
 
 

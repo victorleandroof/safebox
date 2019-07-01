@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 
 import java.util.ArrayList;
@@ -30,20 +32,20 @@ public class RegisterNewUser {
         this.cryp = cryp;
     }
 
-    public Client execute(Client client){
-            validator.execute(client);
+    public Mono<Client> execute(Mono<Client> client){
+            validator.execute(client.block());
+
             try {
-                cryp.saveKeysKeyStore(client.getUsername(), client.getPassword());
-                client.setPublicKey(cryp.getPublicKeyStr());
-                client.setPassword(Base64.getEncoder()
-                        .encodeToString((cryp.encrypt(client.getPassword().getBytes()))));
-                List<Password> passwordList = new ArrayList<>();
-                client.setListPasswords(passwordList);
+                cryp.saveKeysKeyStore(client.block().getUsername(), client.block().getPassword());
+                client.block().setPublicKey(cryp.getPublicKeyStr());
+                client.block().setPassword(Base64.getEncoder()
+                        .encodeToString((cryp.encrypt(client.block().getPassword().getBytes()))));
                 return clientGateway.saveOrUpdate(client);
             }catch (Exception e){
                 log.warn(e.getMessage());
             }
-            return  new Client();
+
+            return  null;
     }
 
 }

@@ -2,6 +2,8 @@ package br.com.victor.safebox.domain;
 
 
 
+import reactor.core.publisher.Mono;
+
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
@@ -22,7 +24,7 @@ public class Password implements Serializable {
     @NotNull(message = "Password cannot be null!")
     private String password;
     private String icon;
-    private Client client;
+    private Mono<Client> client;
 
 
     public String getId() {
@@ -73,11 +75,11 @@ public class Password implements Serializable {
         this.icon = icon;
     }
 
-    public Client getClient() {
+    public Mono<Client> getClient() {
         return client;
     }
 
-    public void setClient(Client client) {
+    public void setClient(Mono<Client> client) {
         this.client = client;
     }
 

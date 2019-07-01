@@ -46,14 +46,7 @@ public class CustumerExceptionHandler {
 				.body(new ErrorResponse(ErrorResponse.ERR_INTERNAL_SERVER_ERROR, e.getMessage()));
 	}
 
-	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-	@ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
-	@ResponseBody
-	public ResponseEntity<ErrorResponse> processMethodNotSupportedException(Exception e){
-		log.warn("Method not supported ocurred :{}",e.getMessage(),e);
-		return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-				.body(new ErrorResponse(ErrorResponse.ERR_METHOD_NOT_SUPPORTED, e.getMessage()));
-	}
+
 
 	@ExceptionHandler(FeatureException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)

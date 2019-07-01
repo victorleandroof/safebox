@@ -1,6 +1,8 @@
 package br.com.victor.safebox.domain;
 
 import org.hibernate.validator.constraints.Email;
+import reactor.core.publisher.Flux;
+
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
@@ -28,7 +30,7 @@ public class Client {
 	@Size(min = 14 , max = 15, message = "Cellphone Me must be between 14 and 15 characters")
 	private String cellphone;
 	private LocalDate birthdate;
-	private List<Password> listPasswords;
+	private Flux<Password> listPasswords;
 	private List<Authority> authorities = new ArrayList<Authority>(){
 		{
 			add(Authority.ROLE_USER);
@@ -99,11 +101,11 @@ public class Client {
 		this.birthdate = birthdate;
 	}
 
-	public List<Password> getListPasswords() {
+	public Flux<Password> getListPasswords() {
 		return listPasswords;
 	}
 
-	public void setListPasswords(List<Password> listPasswords) {
+	public void setListPasswords(Flux<Password> listPasswords) {
 		this.listPasswords = listPasswords;
 	}
 
